@@ -1,3 +1,6 @@
+import pandas as pd
+import numpy as np
+
 
 #Extract the days the store is closed from the dataset!
 #Input dataframe
