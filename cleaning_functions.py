@@ -109,7 +109,7 @@ def clean_complete(df1,df2):
     
     #sort the values to get original set
     df = df.sort_values(by = "Date")
-
+    df.drop(columns = "Date", inplace = True)
     
 
     #remove sales outliers, zeros as well as more than 3std deviations
