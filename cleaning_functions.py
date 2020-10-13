@@ -109,8 +109,8 @@ def clean_complete(df1,df2):
     
     #sort the values to get original set
     df = df.sort_values(by = "Date")
-    df.drop(columns = "Date", inplace = True)
-    
+    df.drop(columns = ["Date"], inplace = True)
+
 
     #remove sales outliers, zeros as well as more than 3std deviations
     df = df[df.Sales != 0]
@@ -132,5 +132,3 @@ def clean_complete(df1,df2):
     return X_train,y_train,X_test,y_test
 
     
-
-
