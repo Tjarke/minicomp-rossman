@@ -123,8 +123,8 @@ def clean_complete(df1,df2):
     
     test_size = 0.2
     
-    X_train = df.iloc[:round(test_size*df.shape[0]),:].drop(columns = ["Sales"])
-    X_test = df.iloc[round(test_size*df.shape[0]):,:].drop(columns = ["Sales"])
+    X_train = df.iloc[:round(test_size*df.shape[0]),:].drop(columns = ["Sales"]).drop(columns = ["Customers"])
+    X_test = df.iloc[round(test_size*df.shape[0]):,:].drop(columns = ["Sales"]).drop(columns = ["Customers"])
     y_train = df.iloc[:round(test_size*df.shape[0]),:].loc[:,"Sales"]
     y_test = df.iloc[round(test_size*df.shape[0]):,:].loc[:,"Sales"]
     
