@@ -83,8 +83,24 @@ def sales_customer_store(df1,df2):
     return df1,df2
 
 
-
-
+def sales_customer_store_day(df1, df2):
+    df1 = df1.copy()
+    df2 = df2.copy()
+    # create a column with the ratio Sales/Customer
+    df1['sales_customer'] = df1['Sales']/df1['Customers']
+    # create a dictionary with the average sales per customer per store
+    sales_customer_store_day_dict = df1.groupby(['Store', 'DayOfWeek'])\
+    ['sales_customer'].mean().to_dict()
+    # Create a column with keys (tuples)
+    df1['key'] = list(zip(df1['Store'], df1['DayOfWeek']))
+    df2['key'] = list(zip(df1['Store'], df2['DayOfWeek']))
+    # create a new column with the average sales per customer per store
+    df1['sales_customer_store_day'] = df1['key'].map(sales_customer_store_day_dict)
+    df2['sales_customer_store_day'] = df2['key'].map(sales_customer_store_day_dict)
+    # drop the sales_customer column
+    df1.drop(columns=['sales_customer', 'key'], inplace=True)
+    df2.drop(columns=['key'], inplace=True)
+    return df1, df2
 
 
 #input: both data frames
@@ -141,14 +157,6 @@ def clean_complete(df1,df2):
     df = ce_one.fit_transform(df)
 
 
-
-    #get month and weeks as column
-
-
-    # df.drop(columns = ['Date'], inplace = True)
-
-
-
     #sort the values to get original set
     df = df.sort_values(by = "Date")
     df.drop(columns = ["Date"], inplace = True)
@@ -191,7 +199,8 @@ def clean_complete(df1,df2):
 
 
 #    X_train, X_test = sales_store(X_train,X_test)
-    X_train, X_test = sales_customer_store(X_train,X_test)
+#    X_train, X_test = sales_customer_store(X_train,X_test)
+    X_train, X_test = sales_customer_store_day(X_train, X_test)
 
     # change week to type integer since it is saved in a different way
     X_train['Week'] = X_train['Week'].astype(int)
