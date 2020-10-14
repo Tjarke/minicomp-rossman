@@ -116,16 +116,20 @@ def clean_complete(df1,df2):
 
 
     #we fill  df['PromoInterval'] so that we dont drop rows in the line below
-
-
     df['PromoInterval'] = df['PromoInterval'].fillna(0)
+    # create Month and Week columns. Furthermore, we create a new DayOfWeek column
+    # to get rid of the NaN
+    df['Date'] = pd.to_datetime(df['Date'])
+    df['Month'] = df['Date'].dt.month
+    df['Week'] = df['Date'].dt.isocalendar().week
+    df['DayOfWeek'] = df['Date'].dt.dayofweek + 1
+
 
     #drop nas
     df = df.dropna(axis=0)
 
 
     #label encode for Assortment
-
     le = LabelEncoder()  #instantiate the Label Encoder
     df.loc[:,'Assortment'] = le.fit_transform(df.loc[:,'Assortment'])
 
@@ -140,9 +144,7 @@ def clean_complete(df1,df2):
 
     #get month and weeks as column
 
-    df['Date'] = pd.to_datetime(df['Date'])
-    df['Month'] = df['Date'].dt.month
-    df['Week'] = df['Date'].dt.isocalendar().week
+
     # df.drop(columns = ['Date'], inplace = True)
 
 
