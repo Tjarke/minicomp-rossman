@@ -14,7 +14,7 @@ def extract_closed(df):
     return df.loc[~select,:],df.loc[select,:]
 
 
-        
+
 
 def no_outlier(df1, col):
     """
@@ -45,7 +45,7 @@ def no_outlier(df1, col):
 
 
 
-def sales_store(df1,df2):
+def sales_store(df1, df2):
     """
     get the average sales per store and save them in a new column in the DataFrame. The function returns a
     DataFrame
@@ -54,11 +54,12 @@ def sales_store(df1,df2):
     OUTPUT:
     - DataFrame with a new column with the average sales per store df1 = train and df2 = test
     """
+    df1 = df1.copy()
+    df2 = df2.copy()
     sales_store_dict = df1.groupby(['Store']).Sales.mean().to_dict()
     df1['sales_store'] = df1['Store'].map(sales_store_dict)
-    # df2['sales_store'] = df2['Store'].map(sales_store_dict)
-    return df1,df2
-
+    df2['sales_store'] = df2['Store'].map(sales_store_dict)
+    return df1, df2
 
 def sales_customer_store(df1,df2):
     """
@@ -68,6 +69,8 @@ def sales_customer_store(df1,df2):
     OUTPUT:
     - DataFrame with a new column with the average sales per customer per store df1 = train and df2 = test
     """
+    df1 = df1.copy()
+    df2 = df2.copy()
     # create a column with the ratio Sales/Customer
     df1['sales_customer'] = df1['Sales']/df1['Customers']
     # create a dictionary with the average sales per customer per store
@@ -75,6 +78,8 @@ def sales_customer_store(df1,df2):
     # create a new column with the average sales per customer per store
     df1['sales_customer_store'] = df1['Store'].map(sales_customer_store_dict)
     df2['sales_customer_store'] = df2['Store'].map(sales_customer_store_dict)
+    # drop the sales_customer column
+    df1.drop(columns=['sales_customer'], inplace=True)
     return df1,df2
 
 
@@ -82,68 +87,69 @@ def sales_customer_store(df1,df2):
 
 
 
-#input: both data frames 
+#input: both data frames
 #output: X_train,y_train,X_test,y_test
 
 def clean_complete(df1,df2):
-    
+
     #merge dfs
     df = pd.merge(df2, df1, how='inner', on=['Store'], sort=False, suffixes=('_train', '_store'), copy=True)
     # df = pd.merge(df2, df1, how='inner', on = ["Store"],
     #      left_index=False, right_index=False, sort="Date",
     #      suffixes=('_x', '_y'), copy=True, indicator=False,
     #      validate=None)
-    
-    
-    
-    
-    
+
+
+
+
+
     # extract closed days
     df,unused = extract_closed(df)
     #Drop open column since it is only ones
     df.drop(columns = ["Open"], inplace = True)
-    
-    
+
+
     df.drop(columns = ['StateHoliday',
                    'SchoolHoliday',
                    'CompetitionOpenSinceMonth',
                    'CompetitionOpenSinceYear',
                    'Promo2SinceWeek',
                    'Promo2SinceYear'], inplace=True)
-    
-    
-    
+
+
+
     #we fill  df['PromoInterval'] so that we dont drop rows in the line below
-    
-    
+
+
     df['PromoInterval'] = df['PromoInterval'].fillna(0)
+
     #drop nas
     df = df.dropna(axis=0)
-  
-    
+
+
     #label encode for Assortment
-    
+
     le = LabelEncoder()  #instantiate the Label Encoder
     df.loc[:,'Assortment'] = le.fit_transform(df.loc[:,'Assortment'])
-    
-    
-    
+
+
+
     # one hot encode for store type
-    ce_one = ce.OneHotEncoder(cols=['StoreType']) 
-    
+    ce_one = ce.OneHotEncoder(cols=['StoreType'])
+
     df = ce_one.fit_transform(df)
-    
-    
-    
+
+
+
     #get month and weeks as column
-    
+
     df['Date'] = pd.to_datetime(df['Date'])
     df['Month'] = df['Date'].dt.month
     df['Week'] = df['Date'].dt.isocalendar().week
     # df.drop(columns = ['Date'], inplace = True)
-    
-    
-    
+
+
+
     #sort the values to get original set
     df = df.sort_values(by = "Date")
     df.drop(columns = ["Date"], inplace = True)
@@ -153,12 +159,12 @@ def clean_complete(df1,df2):
     df = df[df.Sales != 0]
     df = no_outlier(df, "Sales")
 
-    
+
     select_jan_etc = (df['PromoInterval'] == "Jan,Apr,Jul,Oct") & (df.loc[:,"Month"].isin([1,4,7,10]))
     select_feb_etc = (df['PromoInterval'] == "Feb,May,Aug,Nov") & (df.loc[:,"Month"].isin([2,5,8,11]))
     select_mar_etc = (df['PromoInterval'] == "Mar,Jun,Sept,Dec") & (df.loc[:,"Month"].isin([3,6,9,12]))
-    
-    
+
+
     df.loc[:,"Promo2"]=0
     df.loc[select_jan_etc,"Promo2"] = 1
     df.loc[select_feb_etc,"Promo2"] = 1
@@ -169,32 +175,32 @@ def clean_complete(df1,df2):
 
 
 
-    
-    
+
+
     #split into train and validation Set
-    
+
     train_size = 0.8
-    
+
     X_train = df.iloc[:round(train_size*df.shape[0]),:]
     X_test = df.iloc[round(train_size*df.shape[0]):,:]
 
-    
-    
+
+
     scaler = StandardScaler()
     X_train.loc[:,"CompetitionDistance"] = scaler.fit_transform(X_train.loc[:,"CompetitionDistance"].to_numpy().reshape(-1, 1))
     X_test.loc[:,"CompetitionDistance"] = scaler.transform(X_test.loc[:,"CompetitionDistance"].to_numpy().reshape(-1, 1))
-    
-    
- #   X_train, X_test = sales_store(X_train,X_test)
-#    X_train, X_test = sales_customer_store(X_train,X_test)
-    
-    X_train = df.iloc[:round(train_size*df.shape[0]),:].drop(columns = ["Sales"]).drop(columns = ["Customers"])
-    X_test = df.iloc[round(train_size*df.shape[0]):,:].drop(columns = ["Sales"]).drop(columns = ["Customers"])
+
+
+#    X_train, X_test = sales_store(X_train,X_test)
+    X_train, X_test = sales_customer_store(X_train,X_test)
+
+
+
+    X_train.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
+    X_test.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
     y_train = df.iloc[:round(train_size*df.shape[0]),:].loc[:,"Sales"]
     y_test = df.iloc[round(train_size*df.shape[0]):,:].loc[:,"Sales"]
-    
-    
-    
-    return X_train,y_train,X_test,y_test
 
-    
+
+
+    return X_train,y_train,X_test,y_test
