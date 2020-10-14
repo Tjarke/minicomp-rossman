@@ -68,6 +68,9 @@ def clean_complete(df1,df2):
     
     # extract closed days
     df,unused = extract_closed(df)
+    #Drop open column since it is only ones
+    df.drop(columns = ["Open"], inplace = True)
+    
     
     df.drop(columns = ['StateHoliday',
                    'SchoolHoliday',
