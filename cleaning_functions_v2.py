@@ -3,8 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
-
-
+from sklearn.model_selection import train_test_split
 
 #Extract the days the store is closed from the dataset!
 #Input dataframe
@@ -176,11 +175,11 @@ def clean_complete(df1,df2):
 
     #split into train and validation Set
 
-    train_size = 0.8
+    # train_size = 0.8
 
-    X_train = df.iloc[:round(train_size*df.shape[0]),:]
-    X_test = df.iloc[round(train_size*df.shape[0]):,:]
-
+    # X_train = df.iloc[:round(train_size*df.shape[0]),:]
+    # X_test = df.iloc[round(train_size*df.shape[0]):,:]
+    X_train, X_test, y_train, y_test = train_test_split( df, df.loc[:,"Sales"], test_size=0.2, random_state=42)
 
 
     scaler = StandardScaler()
@@ -197,8 +196,8 @@ def clean_complete(df1,df2):
 
     X_train.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
     X_test.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
-    y_train = df.iloc[:round(train_size*df.shape[0]),:].loc[:,"Sales"]
-    y_test = df.iloc[round(train_size*df.shape[0]):,:].loc[:,"Sales"]
+    # y_train = df.iloc[:round(train_size*df.shape[0]),:].loc[:,"Sales"]
+    # y_test = df.iloc[round(train_size*df.shape[0]):,:].loc[:,"Sales"]
 
 
 
