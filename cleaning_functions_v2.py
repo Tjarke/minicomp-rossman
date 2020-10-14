@@ -105,11 +105,8 @@ def clean_complete(df1,df2):
 
     # extract closed days
     df,unused = extract_closed(df)
-    #Drop open column since it is only ones
-    df.drop(columns = ["Open"], inplace = True)
-
-
-    df.drop(columns = ['StateHoliday',
+    #Drop unnecesary columns:
+    df.drop(columns = ['Open', 'StateHoliday',
                    'SchoolHoliday',
                    'CompetitionOpenSinceMonth',
                    'CompetitionOpenSinceYear',
@@ -194,7 +191,9 @@ def clean_complete(df1,df2):
 #    X_train, X_test = sales_store(X_train,X_test)
     X_train, X_test = sales_customer_store(X_train,X_test)
 
-
+    # change week to type integer since it is saved in a different way
+    X_train['Week'] = X_train['Week'].astype(int)
+    X_test['Week'] = X_test['Week'].astype(int)
 
     X_train.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
     X_test.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
