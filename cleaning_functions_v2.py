@@ -114,7 +114,11 @@ def clean_complete(df1,df2):
     #      suffixes=('_x', '_y'), copy=True, indicator=False,
     #      validate=None)
 
+    # set Open's NaN values to 1 when sales where > 0
+    select = (df.loc[:,'Open'].isnull()) & (df.loc[:,'Sales'] > 0)
+    df.loc[select, 'Open'] = 1
 
+    # get the day, week, and month
     df['Date'] = pd.to_datetime(df['Date'])
     df['Month'] = df['Date'].dt.month
     df['Week'] = df['Date'].dt.isocalendar().week
@@ -185,11 +189,11 @@ def clean_complete(df1,df2):
 
     #split into train and validation Set
 
-    # train_size = 0.8
+    train_size = 0.8
 
-    # X_train = df.iloc[:round(train_size*df.shape[0]),:]
-    # X_test = df.iloc[round(train_size*df.shape[0]):,:]
-    X_train, X_test, y_train, y_test = train_test_split( df, df.loc[:,"Sales"], test_size=0.2, random_state=42)
+    X_train = df.iloc[:round(train_size*df.shape[0]),:]
+    X_test = df.iloc[round(train_size*df.shape[0]):,:]
+    # X_train, X_test, y_train, y_test = train_test_split( df, df.loc[:,"Sales"], test_size=0.2, random_state=142)
 
 
     scaler = StandardScaler()
@@ -207,8 +211,8 @@ def clean_complete(df1,df2):
 
     X_train.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
     X_test.drop(columns = ["Sales", "Customers", "Store"], inplace = True)
-    # y_train = df.iloc[:round(train_size*df.shape[0]),:].loc[:,"Sales"]
-    # y_test = df.iloc[round(train_size*df.shape[0]):,:].loc[:,"Sales"]
+    y_train = df.iloc[:round(train_size*df.shape[0]),:].loc[:,"Sales"]
+    y_test = df.iloc[round(train_size*df.shape[0]):,:].loc[:,"Sales"]
 
 
 
