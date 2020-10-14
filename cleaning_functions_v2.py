@@ -115,7 +115,10 @@ def clean_complete(df1,df2):
     #      validate=None)
 
 
-
+    df['Date'] = pd.to_datetime(df['Date'])
+    df['Month'] = df['Date'].dt.month
+    df['Week'] = df['Date'].dt.isocalendar().week
+    df['DayOfWeek'] = df['Date'].dt.dayofweek + 1
 
 
     # extract closed days
@@ -134,10 +137,7 @@ def clean_complete(df1,df2):
     df['PromoInterval'] = df['PromoInterval'].fillna(0)
     # create Month and Week columns. Furthermore, we create a new DayOfWeek column
     # to get rid of the NaN
-    df['Date'] = pd.to_datetime(df['Date'])
-    df['Month'] = df['Date'].dt.month
-    df['Week'] = df['Date'].dt.isocalendar().week
-    df['DayOfWeek'] = df['Date'].dt.dayofweek + 1
+
 
 
     #drop nas
