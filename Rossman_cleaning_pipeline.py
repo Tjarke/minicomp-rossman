@@ -36,7 +36,8 @@ def clean_complete_test(test_data, store_data):
     # extract closed days
     df,unused = extract_closed(df)
     
-    
+    #Remove sales 0 cause the error metric cannot handle it 
+    df = df[df.Sales != 0]
     # set Open's NaN values to 1 when sales where > 0
     select = (df.loc[:,'Open'].isnull()) & (df.loc[:,'Sales'] > 0)
     df.loc[select, 'Open'] = 1
