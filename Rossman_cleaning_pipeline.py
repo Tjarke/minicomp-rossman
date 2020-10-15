@@ -98,7 +98,6 @@ def clean_complete(test_data, store_data):
                    'StoreType_1',
                    'StoreType_2',
                    'StoreType_3',
-                   'StoreType_4',
                    'Assortment',
                    'CompetitionDistance',
                    'Promo2',
