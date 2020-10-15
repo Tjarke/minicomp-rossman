@@ -19,15 +19,24 @@ def extract_closed(df):
 #input: both data frames
 #output: X_train,y_train,X_test,y_test
 
-def clean_complete(test_data, store_data):
+def clean_complete_test(test_data, store_data):
 
     # make a copy of the dataset for cleaning purposes
     df1 = test_data.copy()
     df2 = store_data.copy()
-
+    
+    with open('encoder_dictionary.pickle', 'rb') as handle:
+        encoder_dictonary = pickle.load(handle)
+    
+    
     # merge both datasets
     df = pd.merge(df1, df2, how='inner', on=['Store'], sort=False, suffixes=('_test', '_store'), copy=True)
-
+    
+    
+    # extract closed days
+    df,unused = extract_closed(df)
+    
+    
     # set Open's NaN values to 1 when sales where > 0
     select = (df.loc[:,'Open'].isnull()) & (df.loc[:,'Sales'] > 0)
     df.loc[select, 'Open'] = 1
@@ -48,10 +57,9 @@ def clean_complete(test_data, store_data):
     # to get rid of the NaN
 
 
-    print('before droping the NaN, the test set has a shape of {}'.format(df.shape))
+
     #drop nas
-     df = df.dropna(axis=0)
-    print('after droping the NaN, the test set has a shape of {}'.format(df.shape))
+    df = df.dropna(axis=0)
 
 
     # sort the values to get original set
@@ -59,8 +67,8 @@ def clean_complete(test_data, store_data):
 
     ############ ENCODING ############
     # label encode for Assortment
-    le = LabelEncoder()  #instantiate the Label Encoder
-    df.loc[:,'Assortment'] = le.fit_transform(df.loc[:,'Assortment'])
+    le = encoder_dictonary[0] 
+    df.loc[:,'Assortment'] = le.transform(df.loc[:,'Assortment'])
 
     # one hot encode for store type
     ce_one = ce.OneHotEncoder(cols=['StoreType'])
@@ -77,20 +85,17 @@ def clean_complete(test_data, store_data):
     df.loc[select_mar_etc,"Promo2"] = 1
 
     # MeanEncoding for StoreID - we replace it with the variable sales per customers per store
-    # Import trained dictionary
-    with open ('sales_customer_store_dict.txt', 'rb') as myFile:
-        sales_customer_store_dict = pickle.load(myFile)
+    sales_customer_store_dict = encoder_dictonary[2]
 
     # map the dictionary to each store
     df['sales_customer_store'] = df['Store'].map(sales_customer_store_dict)
 
 
-    print('After encoding the shape of the dataset is {}, remember that \nno columns have been dropped so far'.format(df.shape))
+
 
     ########## STANDARDIZATION #############
-    scaler = StandardScaler()
-    ### IMPORTATN import pickle with scaler!
-    # df.loc[:,"CompetitionDistance"] = scaler.transform(df.loc[:,"CompetitionDistance"].to_numpy().reshape(-1, 1))
+    scaler = encoder_dictonary[1]
+    df.loc[:,"CompetitionDistance"] = scaler.transform(df.loc[:,"CompetitionDistance"].to_numpy().reshape(-1, 1))
 
     # get the clean data
     df_clean = df[['DayOfWeek',
@@ -104,17 +109,9 @@ def clean_complete(test_data, store_data):
                    'Month',
                    'Week',
                    'sales_customer_store']].copy()
+    
+    y_test = df.loc[:,"Sales"]
+    
+    return df_clean , y_test
 
-    return df_clean
 
-    #
-    # #Drop unnecesary columns:
-    # df.drop(columns = ['StateHoliday',
-    #                'SchoolHoliday',
-    #                'CompetitionOpenSinceMonth',
-    #                'CompetitionOpenSinceYear',
-    #                'Promo2SinceWeek',
-    #                'Promo2SinceYear'], inplace=True)
-    # df.drop(columns = ["Date"], inplace = True)
-    # df.drop(columns = ["PromoInterval"],inplace = True)
-    #
