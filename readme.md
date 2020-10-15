@@ -1,18 +1,53 @@
-## Rossman Kaggle Mini-Competition
+# Rossman Kaggle Mini-Competition
 
-This mini competition is adapted from the Kaggle Rossman challenge.  Please refrain from looking at the challenge on Kaggle until after you have finished - this will allow you to get a true measurement of where you are at as a data scientist.
+This mini competition is adapted from the Kaggle Rossman challenge and was part of the Data Science Retreat Program 2020.
+The Task is to predict future sales of Rossman-stores, using the data from two csv files:
+- *store.csv*: general information for each store
+- *train.csv*: daily sales information for each store
 
-## Setup
+More information on the data in the Dataset section.
+
+## Structure of the repository and how to use it
+Make sure to read this and the next section before you start using the notebooks
+
+### 1. The Results:
+You will find our results and prediction accuracy in the **Rossman_sales_pred_notebook**. Here you can use our pre-trained model to get the root mean square percentage error (RMSPE) on the given Test-set. **How to use the notebook**:
+  - Just run the cells one after another and you will get the RMSPE at the end. Please notice that this could take some time as the model we use is relatively complex. You can read more about the model in the Model section below.
+  - The Notebook uses the python script 'Rossman_cleaning_pipeline' to clean the raw-data. You do not have to do/change anything here. The notebook makes everything for you.
+  - Our trained model and some further steps are saved in the pickle file "encoder_dict.pkl". You do not have to do/change anything here. The notebook makes everything for you.
+
+
+### 2. Setting up the model:
+If you are interested in the setting-up the model and maybe tuning the model by yourself, please use the notebook **"Training_notebook"**. Here you can follow step by step the cleaning and modeling process we went through. **Our goal is for you, to be able to reproduce our model and get the same results as we did**. However, you are free to play with the model and even try a new one for yourself! For more information on the model please refer to the model section below. **How to use the notebook**:
+  - Just run the cells one after another and at the end you will have a fully trained model ready to test with real life data
+  - The Notebook uses the python script "Rossman_cleaning_pipeline_trainset.py" to clean the training data. We then use this data in the notebook to train the model. Feel free to play with this script as well, as here is where all the "magic" happens. **Maybe you have a great idea to improve the accuracy of the model! Try and let us know how it went!**
+  - A predictor for NaN values of Customers is saved as a Pickle File under the name "customer_pred_model.sav". For more information regarding this file please refer to the Model section below
+
+## Before you start!
+
+Before you start, you need to set up your environment and unzip the data. Make sure you have conda installed.
+
+### Setup the environment
+please run the following command in your favorite terminal. The Environment is called "MiniComp"
 
 ```bash
-#  during the competition run
-python data.py
 
-#  at test time run
+conda env create -f environment.yml
+
+```
+
+
+### Get the data
+
+please run the following command in your terminal. Be aware this is not the same as unzipping as the data was modified for this challenge
+```bash
+
 python data.py --test 1
 ```
 
-## Dataset
+**Now you are good to go and use the notebooks!**
+
+## The Dataset
 
 The dataset is made of two csvs:
 
@@ -24,7 +59,7 @@ The dataset is made of two csvs:
 ['Date', 'Store', 'DayOfWeek', 'Sales', 'Customers', 'Open', 'Promo','StateHoliday', 'SchoolHoliday']
 ```
 
-More info from Kaggle:
+Feature information from Kaggle:
 
 ```
 Id - an Id that represents a (Store, Date) duple within the test set
@@ -57,17 +92,12 @@ Promo2Since[Year/Week] - describes the year and calendar week when the store sta
 PromoInterval - describes the consecutive intervals Promo2 is started, naming the months the promotion is started anew. E.g. "Feb,May,Aug,Nov" means each round starts in February, May, August, November of any given year for that store
 ```
 
-The test period is from 2014-08-01 to 2015-07-31 - the test dataset is the same format as `train.csv`.
+The test period is from 2013-01-01 to 2014-07-31 - the test dataset is the same format as `train.csv`. One thing to note here is, even though the test set contains customers, we should consider this feature to be unknown!!
 
-## Scoring Criteria
-
-The competition is scored based on a composite of predictive accuracy and reproducibility.
 
 ## Predictive accuracy
 
-The task is to predict the `Sales` of a given store on a given day.
-
-Submissions are evaluated on the root mean square percentage error (RMSPE):
+The goal is to predict the `Sales` of a given store on a given day. The metric used to meassure accuracy is given by the root mean square percentage error (RMSPE):
 
 ![](./assets/rmspe.png)
 
@@ -81,29 +111,23 @@ def metric(preds, actuals):
 
 Zero sales days are ignored in scoring.
 
-The team scores will be ranked - the highest score (lowest RMSPE) will receive a score of 10 for the scoring criteria section.
 
-Each lower score (higher RMSPE) will receive a score of 10-(1 * number in ranking). If they are ranked second, score will be 10-2 = 8. 
+## Model
 
-## Reproducibility
+### The Best Model: Gradient Boost Tree
+The model we use is a Gradient Boost Tree from XGBoost. The Hyper-parameters we used are:
+- Max depth for each tree: 3
+- Learning rate: 0.5
+- Number of iterations: 15,000
+- Regularization (Lambda): 4
+- Subsample: 0.8
 
-The entire model should be completely reproducible - to score this the teacher will clone your repository and follow the instructions as per the readme.  All teams start out with a score of 10.  One point is deducted for each step not included in the repo.
+We tested a lot of different values for the above mentioned parameters, and found these to be the best mix.
 
-## Advice
+### Other Models:
+We also tried other popular algorithmic models, however none of them could achieve the same performance as the XGBoost. The next bests were: Random Forest, Tree, Average Sales per Store and Linear Regression. Feel Free to try them by yourself.
 
-Commit early and often
+### Feature Engineering
+To increase the prediction power of our models we invested a lot of effort engineering new features. Please go to the python scripts "Rossman_cleaning_pipeline_trainset.py" or "Rossman_cleaning_pipeline.py" if you are interested in the implementation of these features.
 
-Notebooks don't merge easily!
-
-Visualize early
-
-Look at the predictions your model is getting wrong - can you engineer a feature for those samples?
-
-Models
-- baseline (average sales per store from in training data)
-- random forest
-- XGBoost
-
-Use your DSR instructor(s)
-- you are not alone - they are here to help with both bugs and data science advice
-- git issues, structuring the data on disk, models to try, notebook problems and conda problems are all things we have seen before
+Furthermore, we use a predictor for the number of customers based on the sales, store and day of week, since there were many NaN values for the number of Customers when there were positive sales. This was the case for around 15,000 entries. We train this predictor also using XGBoost and saved it as a Pickle file "customer_pred_model.sav". We did not saved its implementation but feel free to try it by yourself.

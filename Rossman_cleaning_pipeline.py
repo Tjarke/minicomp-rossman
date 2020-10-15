@@ -24,19 +24,19 @@ def clean_complete_test(test_data, store_data):
     # make a copy of the dataset for cleaning purposes
     df1 = test_data.copy()
     df2 = store_data.copy()
-    
+
     with open('encoder_dictionary.pickle', 'rb') as handle:
         encoder_dictonary = pickle.load(handle)
-    
-    
+
+
     # merge both datasets
     df = pd.merge(df1, df2, how='inner', on=['Store'], sort=False, suffixes=('_test', '_store'), copy=True)
-    
-    
+
+
     # extract closed days
     df,unused = extract_closed(df)
-    
-    #Remove sales 0 cause the error metric cannot handle it 
+
+    #Remove sales 0 cause the error metric cannot handle it
     df = df[df.Sales != 0]
     # set Open's NaN values to 1 when sales where > 0
     select = (df.loc[:,'Open'].isnull()) & (df.loc[:,'Sales'] > 0)
@@ -68,7 +68,7 @@ def clean_complete_test(test_data, store_data):
 
     ############ ENCODING ############
     # label encode for Assortment
-    le = encoder_dictonary[0] 
+    le = encoder_dictonary[0]
     df.loc[:,'Assortment'] = le.transform(df.loc[:,'Assortment'])
 
     # one hot encode for store type
@@ -110,9 +110,7 @@ def clean_complete_test(test_data, store_data):
                    'Month',
                    'Week',
                    'sales_customer_store']].copy()
-    
-    y_test = df.loc[:,"Sales"]
-    
+
+    y_test = df["Sales"].copy()
+
     return df_clean , y_test
-
-
